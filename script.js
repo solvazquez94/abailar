@@ -2,6 +2,8 @@ let video;
 let poseNet;
 let poses = [];
 let hearts = [];
+let fallingHearts = [];
+let score = 0;
 let modelLoaded = false;
 let cameraReady = false;
 let music;
@@ -52,7 +54,7 @@ function modelReady() {
     console.log('Modelo listo');
     modelLoaded = true;
     document.getElementById('status').textContent = '✅ ¡Listo!';
-    document.getElementById('instructions').innerHTML = '✋ Mueve las manos para crear corazones 💕';
+    document.getElementById('instructions').innerHTML = '✋ Mueve las manos para crear corazones 💕<br>🖤 Atrapa corazones negros con tu cabeza!';
     
     // Reproducir música
     music.play();
@@ -85,6 +87,14 @@ function draw() {
     // Actualizar y dibujar corazones
     updateHearts();
     drawHearts();
+    
+    // Juego de corazones que caen
+    createFallingHearts();
+    updateFallingHearts();
+    drawFallingHearts();
+    
+    // Mostrar puntuación
+    displayScore();
 }
 
 function drawKeypoints() {
@@ -211,5 +221,105 @@ function drawHeart(x, y, size, opacity, rotation) {
     fill(255, 100, 150, opacity * 0.6);
     ellipse(-size * 0.15, -size * 0.2, size * 0.2, size * 0.2);
     
+    pop();
+}
+
+// Funciones del juego de corazones que caen
+function createFallingHearts() {
+    // Crear corazones negros que caen con cierta probabilidad
+    if (random(1) < 0.02 && modelLoaded) {
+        fallingHearts.push({
+            x: random(width),
+            y: -50,
+            size: random(30, 50),
+            speed: random(3, 6),
+            rotation: random(TWO_PI),
+            rotationSpeed: random(-0.1, 0.1)
+        });
+    }
+}
+
+function updateFallingHearts() {
+    for (let i = fallingHearts.length - 1; i >= 0; i--) {
+        let heart = fallingHearts[i];
+        heart.y += heart.speed;
+        heart.rotation += heart.rotationSpeed;
+        
+        // Verificar colisión con la cabeza
+        if (poses.length > 0) {
+            let pose = poses[0].pose;
+            let nose = pose.keypoints.find(kp => kp.part === 'nose');
+            
+            if (nose && nose.score > 0.3) {
+                let headX = width - nose.position.x;
+                let headY = nose.position.y;
+                let d = dist(heart.x, heart.y, headX, headY);
+                
+                // Si el corazón toca la cabeza
+                if (d < heart.size + 30) {
+                    score += 10;
+                    fallingHearts.splice(i, 1);
+                    // Crear efecto de explosión de corazones
+                    createHeartExplosion(heart.x, heart.y);
+                    continue;
+                }
+            }
+        }
+        
+        // Eliminar corazones que salieron de la pantalla
+        if (heart.y > height + 100) {
+            fallingHearts.splice(i, 1);
+        }
+    }
+}
+
+function drawFallingHearts() {
+    for (let heart of fallingHearts) {
+        push();
+        translate(heart.x, heart.y);
+        rotate(heart.rotation);
+        fill(0); // Negro
+        noStroke();
+        
+        // Dibujar corazón negro
+        beginShape();
+        vertex(0, heart.size * 0.3);
+        bezierVertex(-heart.size * 0.5, -heart.size * 0.3, -heart.size * 0.5, -heart.size * 0.7, 0, -heart.size * 0.3);
+        bezierVertex(heart.size * 0.5, -heart.size * 0.7, heart.size * 0.5, -heart.size * 0.3, 0, heart.size * 0.3);
+        endShape(CLOSE);
+        
+        // Brillo blanco
+        fill(255, 255, 255, 150);
+        ellipse(-heart.size * 0.15, -heart.size * 0.2, heart.size * 0.15, heart.size * 0.15);
+        
+        pop();
+    }
+}
+
+function createHeartExplosion(x, y) {
+    // Crear varios corazones pequeños que explotan hacia afuera
+    for (let i = 0; i < 8; i++) {
+        let angle = (TWO_PI / 8) * i;
+        let speed = random(3, 6);
+        hearts.push({
+            x: x,
+            y: y,
+            size: random(15, 25),
+            speedX: cos(angle) * speed,
+            speedY: sin(angle) * speed,
+            opacity: 255,
+            rotation: random(TWO_PI),
+            rotationSpeed: random(-0.3, 0.3)
+        });
+    }
+}
+
+function displayScore() {
+    push();
+    fill(0);
+    textSize(32);
+    textAlign(RIGHT, TOP);
+    textStyle(BOLD);
+    text('Puntos: ' + score, width - 30, 30);
     pop();
 }
