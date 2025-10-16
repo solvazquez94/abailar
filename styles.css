@@ -1,0 +1,90 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+}
+
+#canvas-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+    width: 100vw !important;
+    height: 100vh !important;
+}
+
+#loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    transition: opacity 0.5s ease;
+}
+
+#loading-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#loading-text {
+    font-family: 'Precious', cursive;
+    font-size: 80px;
+    color: black;
+    text-align: center;
+}
+
+#status {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.9);
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    z-index: 10;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    font-family: 'Precious', cursive;
+}
+
+#instructions {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.95);
+    padding: 30px 50px;
+    border-radius: 20px;
+    font-size: 32px;
+    z-index: 10;
+    text-align: center;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    font-family: 'Precious', cursive;
+    max-width: 70%;
+    line-height: 1.6;
+    animation: vibrate 0.3s ease-in-out infinite;
+}
+
+@keyframes vibrate {
+    0%, 100% { transform: translate(-50%, -50%) rotate(0deg); }
+    25% { transform: translate(-50%, -50%) rotate(0.5deg); }
+    75% { transform: translate(-50%, -50%) rotate(-0.5deg); }
+}
